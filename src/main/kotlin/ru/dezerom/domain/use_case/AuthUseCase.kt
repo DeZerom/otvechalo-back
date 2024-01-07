@@ -1,9 +1,7 @@
 package ru.dezerom.domain.use_case
 
-import io.ktor.http.*
 import ru.dezerom.data.repo.AuthRepository
 import ru.dezerom.domain.models.auth.CredentialsModel
-import ru.dezerom.domain.models.common.ActionResult
 import ru.dezerom.domain.models.respond.ErrorType
 import ru.dezerom.domain.models.respond.RespondModel
 import ru.dezerom.dto.auth.CredentialsDTO

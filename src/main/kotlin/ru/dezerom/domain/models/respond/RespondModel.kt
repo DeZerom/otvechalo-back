@@ -1,7 +1,5 @@
 package ru.dezerom.domain.models.respond
 
-import io.ktor.http.*
-
 sealed class RespondModel<out T> {
 
     data class SuccessRespondModel<T>(
