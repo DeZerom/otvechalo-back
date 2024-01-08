@@ -6,7 +6,9 @@ import ru.dezerom.domain.models.respond.ErrorType
 import ru.dezerom.domain.models.respond.RespondModel
 import ru.dezerom.dto.auth.CredentialsDTO
 import ru.dezerom.dto.common.BooleanDTO
+import ru.dezerom.dto.common.StringDTO
 import ru.dezerom.mappers.toDTO
+import ru.dezerom.utils.handle
 import ru.dezerom.utils.map
 import ru.dezerom.utils.sha256Hash
 import java.util.*
@@ -14,6 +16,21 @@ import java.util.*
 class AuthUseCase {
 
     private val authRepository by lazy { AuthRepository() }
+
+    suspend fun authorize(credentialsDTO: CredentialsDTO?): RespondModel<StringDTO> {
+        if (credentialsDTO?.login == null || credentialsDTO.password == null)
+            return RespondModel.ErrorRespondModel(ErrorType.emptyValues())
+
+        val foundCredentials = authRepository.getUser(credentialsDTO.login).handle(
+            onSuccess = { it.body },
+            onError = { return RespondModel.ErrorRespondModel(it.errorType) }
+        )
+
+        return if (foundCredentials.password == (credentialsDTO.password + foundCredentials.salt).sha256Hash())
+            authRepository.createToken(foundCredentials.id).map { StringDTO(it.body) }
+        else
+            RespondModel.ErrorRespondModel(ErrorType.WrongData(ErrorType.Reasons.WRONG_PASS))
+    }
 
     suspend fun register(credentialsDTO: CredentialsDTO?): RespondModel<BooleanDTO> {
         val credentialsModel = mapCredentials(credentialsDTO)
@@ -24,7 +41,7 @@ class AuthUseCase {
             else
                 authRepository.registerUser(credentialsModel).map { it.body.toDTO() }
         } else {
-            RespondModel.ErrorRespondModel(ErrorType.WrongData(ErrorType.Reasons.EMPTY_VALUES))
+            RespondModel.ErrorRespondModel(ErrorType.emptyValues())
         }
     }
 

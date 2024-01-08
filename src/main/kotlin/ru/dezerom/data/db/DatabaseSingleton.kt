@@ -6,6 +6,7 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.dezerom.data.db.tables.auth.CredentialsTable
+import ru.dezerom.data.db.tables.auth.TokensTable
 
 object DatabaseSingleton {
 
@@ -29,7 +30,7 @@ object DatabaseSingleton {
     }
 
     private fun createTables() {
-        SchemaUtils.create(CredentialsTable)
+        SchemaUtils.create(CredentialsTable, TokensTable)
     }
 
 }

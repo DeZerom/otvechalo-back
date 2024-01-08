@@ -33,7 +33,7 @@ suspend fun <T> makeCall(
     }
 }
 
-fun <T, R>CallResult<T>.map(
+fun <T, R> CallResult<T>.map(
     onSuccess: (CallResult.Success<T>) -> R
 ): RespondModel<R> {
     return when (this) {
@@ -42,5 +42,16 @@ fun <T, R>CallResult<T>.map(
 
         is CallResult.Error ->
             RespondModel.ErrorRespondModel(this.errorType)
+    }
+}
+
+inline fun <T, R> CallResult<T>.handle(
+    onSuccess: (CallResult.Success<T>) -> R,
+    onError: (CallResult.Error) -> R
+): R {
+    return when (this) {
+        is CallResult.Success -> onSuccess(this)
+
+        is CallResult.Error -> onError(this)
     }
 }

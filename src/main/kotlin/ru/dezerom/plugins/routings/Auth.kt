@@ -10,8 +10,8 @@ val authUseCase by lazy { AuthUseCase() }
 
 fun Routing.authRouting() {
 
-    post("/register") {
-        makeRespond { authUseCase.register(call.receiveOrNull()) }
-    }
+    post("/register") { makeRespond { authUseCase.register(call.receiveOrNull()) } }
+
+    post("/auth") { makeRespond { authUseCase.authorize(call.receiveOrNull()) } }
 
 }
