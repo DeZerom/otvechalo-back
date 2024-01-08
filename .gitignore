@@ -4,6 +4,9 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+### Secrets ###
+src/main/kotlin/ru/dezerom/data/db/DbSecrets.kt
+
 ### STS ###
 .apt_generated
 .classpath
