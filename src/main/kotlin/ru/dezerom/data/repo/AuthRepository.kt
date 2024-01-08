@@ -1,6 +1,7 @@
 package ru.dezerom.data.repo
 
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import ru.dezerom.data.db.DatabaseSingleton
@@ -17,6 +18,20 @@ import ru.dezerom.utils.makeCall
 import java.util.*
 
 class AuthRepository {
+
+    suspend fun getUserByToken(token: String): CallResult<CredentialsModel> {
+        return makeCall(
+            call = {
+                DatabaseSingleton.dbQuery {
+                    CredentialsTable.innerJoin(TokensTable)
+                        .select { (CredentialsTable.id eq TokensTable.userId) and (TokensTable.token eq token) }
+                        .firstOrNull()
+                        ?.toDomain()
+                }
+            },
+            onNull = { CallResult.Error(ErrorType.noAccess()) }
+        )
+    }
 
     suspend fun createToken(userId: UUID): CallResult<String> {
         val token = UUID.randomUUID().toString()
