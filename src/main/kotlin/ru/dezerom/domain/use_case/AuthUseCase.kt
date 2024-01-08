@@ -26,6 +26,14 @@ class AuthUseCase {
             onError = { return RespondModel.ErrorRespondModel(it.errorType) }
         )
 
+        val foundToken = authRepository.getToken(foundCredentials.id).handle(
+            onSuccess = { it.body },
+            onError = { null }
+        )
+
+        if (foundToken != null)
+            return RespondModel.SuccessRespondModel(StringDTO(foundToken))
+
         return if (foundCredentials.password == (credentialsDTO.password + foundCredentials.salt).sha256Hash())
             authRepository.createToken(foundCredentials.id).map { StringDTO(it.body) }
         else

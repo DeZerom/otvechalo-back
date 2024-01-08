@@ -11,13 +11,28 @@ import ru.dezerom.domain.models.auth.CredentialsModel
 import ru.dezerom.domain.models.call_result.CallResult
 import ru.dezerom.domain.models.common.ActionResult
 import ru.dezerom.domain.models.respond.ErrorType
-import ru.dezerom.mappers.toDomain
+import ru.dezerom.mappers.rowToCredentials
+import ru.dezerom.mappers.rowToTokenString
 import ru.dezerom.utils.handle
 import ru.dezerom.utils.makeAction
 import ru.dezerom.utils.makeCall
 import java.util.*
 
 class AuthRepository {
+
+    suspend fun getToken(userId: UUID): CallResult<String> {
+        return makeCall(
+            call = {
+                DatabaseSingleton.dbQuery {
+                    TokensTable
+                        .select { TokensTable.userId eq userId }
+                        .firstOrNull()
+                        ?.rowToTokenString()
+                }
+            },
+            onNull = { CallResult.Error(ErrorType.noAccess()) }
+        )
+    }
 
     suspend fun getUserByToken(token: String): CallResult<CredentialsModel> {
         return makeCall(
@@ -26,7 +41,7 @@ class AuthRepository {
                     CredentialsTable.innerJoin(TokensTable)
                         .select { (CredentialsTable.id eq TokensTable.userId) and (TokensTable.token eq token) }
                         .firstOrNull()
-                        ?.toDomain()
+                        ?.rowToCredentials()
                 }
             },
             onNull = { CallResult.Error(ErrorType.noAccess()) }
@@ -79,7 +94,7 @@ class AuthRepository {
                     CredentialsTable
                         .select { CredentialsTable.login eq login }
                         .firstOrNull()
-                        ?.toDomain()
+                        ?.rowToCredentials()
                 }
             },
             onNull = { CallResult.Error(ErrorType.NotFound(ErrorType.Reasons.USER_NOT_EXISTS)) }
