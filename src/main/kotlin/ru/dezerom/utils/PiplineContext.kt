@@ -12,6 +12,6 @@ suspend inline fun <reified T : Any>PipelineContext<Unit, ApplicationCall>.makeR
             call.respond(HttpStatusCode.OK, response.body)
 
         is RespondModel.ErrorRespondModel ->
-            call.respond(response.error.code, response.error.message)
+            call.respond(response.error.code, response.error.reason)
     }
 }

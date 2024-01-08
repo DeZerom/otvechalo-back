@@ -1,9 +1,11 @@
 package ru.dezerom.data.db
 
+import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
-import ru.dezerom.data.db.tables.auth.Credentials
+import ru.dezerom.data.db.tables.auth.CredentialsTable
 
 object DatabaseSingleton {
 
@@ -15,15 +17,19 @@ object DatabaseSingleton {
         transaction(database) { createTables() }
     }
 
+    suspend fun <T>dbQuery(query: () -> T) = newSuspendedTransaction(Dispatchers.IO, database) { query() }
+
     private fun initConnection() {
         Database.connect(
             url = DbSecrets.DB_URL,
+            user = DbSecrets.DB_USER,
+            password = DbSecrets.DB_PASSWORD,
             driver = "org.postgresql.Driver"
         )
     }
 
     private fun createTables() {
-        SchemaUtils.create(Credentials)
+        SchemaUtils.create(CredentialsTable)
     }
 
 }

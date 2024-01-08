@@ -2,13 +2,29 @@ package ru.dezerom.domain.models.respond
 
 import io.ktor.http.*
 
-enum class ErrorType {
-    WRONG_DATA;
+sealed class ErrorType {
 
     val code: HttpStatusCode
         get() = when (this) {
-            WRONG_DATA -> HttpStatusCode.BadRequest
+            is WrongData -> HttpStatusCode.BadRequest
+            is InternalError -> HttpStatusCode.InternalServerError
         }
 
-    val message: String = this.name
+    open val reason: String = Reasons.EMPTY
+
+    data class WrongData(override val reason: String): ErrorType()
+
+    data class InternalError(override val reason: String): ErrorType()
+
+    object Reasons {
+        const val EMPTY = ""
+
+        const val USER_EXISTS = "user exists"
+
+        const val EMPTY_VALUES = "one of the values is empty"
+    }
+
+    companion object {
+        fun internal(reason: String = Reasons.EMPTY) = InternalError(reason)
+    }
 }

@@ -2,7 +2,7 @@ package ru.dezerom.domain.models.call_result
 
 import ru.dezerom.domain.models.respond.ErrorType
 
-sealed class CallResult<T> {
+sealed class CallResult<out T> {
 
     data class Success<T>(
         val body: T
