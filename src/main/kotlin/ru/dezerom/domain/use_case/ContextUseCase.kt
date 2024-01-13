@@ -3,12 +3,16 @@ package ru.dezerom.domain.use_case
 import ru.dezerom.data.repo.AuthRepository
 import ru.dezerom.data.repo.ContextRepository
 import ru.dezerom.domain.models.auth.CredentialsModel
+import ru.dezerom.domain.models.context.LightWeightContextModel
 import ru.dezerom.domain.models.context.RichContextModel
 import ru.dezerom.domain.models.respond.ErrorType
 import ru.dezerom.domain.models.respond.RespondModel
 import ru.dezerom.dto.common.StringDTO
+import ru.dezerom.dto.context.ContextLightWeightDTO
 import ru.dezerom.dto.context.SaveContextDTO
+import ru.dezerom.mappers.toDTO
 import ru.dezerom.utils.handle
+import ru.dezerom.utils.map
 import ru.dezerom.utils.sha256Hash
 import java.util.*
 
@@ -16,6 +20,14 @@ class ContextUseCase {
 
     private val authRepository by lazy { AuthRepository() }
     private val contextRepository by lazy { ContextRepository() }
+
+    suspend fun getLightWeightContexts(token: String?): RespondModel<List<ContextLightWeightDTO>> {
+        val foundCredentials = checkToken(token) ?: return RespondModel.ErrorRespondModel(ErrorType.noAccess())
+
+        return contextRepository.getContextsLightWeight(foundCredentials.id).map {
+            it.body.map(LightWeightContextModel::toDTO)
+        }
+    }
 
     suspend fun saveContext(token: String?, dto: SaveContextDTO?): RespondModel<StringDTO> {
         val foundUserCredentials = checkToken(token) ?: return RespondModel.ErrorRespondModel(ErrorType.noAccess())
