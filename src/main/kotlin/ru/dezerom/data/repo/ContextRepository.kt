@@ -4,6 +4,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.update
 import ru.dezerom.data.db.DatabaseSingleton
 import ru.dezerom.data.db.tables.auth.CredentialsTable
 import ru.dezerom.data.db.tables.context.ContextTable
@@ -60,6 +61,24 @@ class ContextRepository {
                         it[this.context] = context.context
                         it[contextHash] = context.contextHash
                     }.insertedCount > 0
+                }
+            }
+        )
+    }
+
+    suspend fun updateContext(newContext: RichContextModel): CallResult<ActionResult> {
+        return makeAction(
+            action = {
+                DatabaseSingleton.dbQuery {
+                    ContextTable.update(
+                        where = { ContextTable.id eq newContext.id },
+                        body = {
+                            it[name] = newContext.name
+                            it[description] = newContext.description
+                            it[context] = newContext.context
+                            it[contextHash] = newContext.contextHash
+                        }
+                    ) > 0
                 }
             }
         )

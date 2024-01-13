@@ -7,6 +7,7 @@ import ru.dezerom.domain.models.context.LightWeightContextModel
 import ru.dezerom.domain.models.context.RichContextModel
 import ru.dezerom.domain.models.respond.ErrorType
 import ru.dezerom.domain.models.respond.RespondModel
+import ru.dezerom.dto.common.BooleanDTO
 import ru.dezerom.dto.common.StringDTO
 import ru.dezerom.dto.context.ContextLightWeightDTO
 import ru.dezerom.dto.context.RichContextDTO
@@ -25,14 +26,8 @@ class ContextUseCase {
     suspend fun getContextDetails(token: String?, id: String?): RespondModel<RichContextDTO> {
         val foundCredentials = checkToken(token) ?: return RespondModel.ErrorRespondModel(ErrorType.noAccess())
 
-        if (id.isNullOrBlank())
-            return RespondModel.ErrorRespondModel(ErrorType.emptyValues())
-
-        val idUUID = try {
-            UUID.fromString(id)
-        } catch (_: IllegalArgumentException) {
-            return RespondModel.ErrorRespondModel(ErrorType.WrongData("Invalid id"))
-        }
+        val idUUID = checkContextId(id)
+            ?: return RespondModel.ErrorRespondModel(ErrorType.WrongData("Invalid id"))
 
         return contextRepository.getContextDetails(idUUID).handle(
             onSuccess = {
@@ -79,6 +74,38 @@ class ContextUseCase {
         )
     }
 
+    suspend fun updateContext(token: String?, id: String?, dto: SaveContextDTO?): RespondModel<BooleanDTO> {
+        val foundCredentials = checkToken(token) ?: return RespondModel.ErrorRespondModel(ErrorType.noAccess())
+
+        val idUUID = checkContextId(id)
+            ?: return RespondModel.ErrorRespondModel(ErrorType.WrongData("Invalid id"))
+
+        if (dto == null)
+            return RespondModel.ErrorRespondModel(ErrorType.emptyValues())
+
+        val context = contextRepository.getContextDetails(idUUID).handle(
+            onSuccess = { it.body },
+            onError = { return RespondModel.ErrorRespondModel(it.errorType) }
+        )
+
+        if (context.authorId != foundCredentials.id)
+            return RespondModel.ErrorRespondModel(ErrorType.noAccess())
+
+        val hasChanges = context.name != dto.name || context.description != dto.description
+                || context.context != dto.context
+
+        if (!hasChanges)
+            return RespondModel.SuccessRespondModel(BooleanDTO(true))
+
+        return contextRepository.updateContext(
+            newContext = context.copy(
+                name = dto.name ?: context.name,
+                description = dto.description ?: context.description,
+                context = dto.context ?: context.context,
+                contextHash = dto.context?.sha256Hash() ?: context.context.sha256Hash()
+            )
+        ).map { it.body.toDTO() }
+    }
 
     private suspend fun checkToken(token: String?): CredentialsModel? {
         return if (token == null)
@@ -88,5 +115,13 @@ class ContextUseCase {
                 onSuccess = { it.body },
                 onError = { null }
             )
+    }
+
+    private fun checkContextId(id: String?): UUID? {
+        return try {
+            UUID.fromString(id)
+        } catch (_: IllegalArgumentException) {
+            null
+        }
     }
 }

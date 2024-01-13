@@ -16,6 +16,10 @@ fun Routing.contextRouting() {
 
     post("/save_context") { makeRespond { contextUseCase.saveContext(call.getToken(), call.receiveOrNull()) } }
 
+    patch("/update_context/{$CONTEXT_ID}") {
+        makeRespond { contextUseCase.updateContext(call.getToken(), call.parameters[CONTEXT_ID], call.receiveOrNull()) }
+    }
+
     get("/all_contexts_light_weight") { makeRespond { contextUseCase.getLightWeightContexts(call.getToken()) } }
 
     get("context_rich") {
