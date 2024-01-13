@@ -26,10 +26,11 @@ sealed class ErrorType {
         const val EMPTY = ""
 
         const val USER_EXISTS = "user_already_exists"
-        const val USER_NOT_EXISTS = "user_not_exists"
+        const val USER_NOT_EXISTS = "wrong_auth_token"
         const val WRONG_PASS = "wrong_password"
 
         const val EMPTY_VALUES = "one_of_the_values_is_empty"
+        const val NOTHING_FOUND = "nothing_found"
     }
 
     companion object {
@@ -38,5 +39,7 @@ sealed class ErrorType {
         fun emptyValues() = WrongData(Reasons.EMPTY_VALUES)
 
         fun noAccess() = Forbidden(Reasons.USER_NOT_EXISTS)
+
+        fun nothingFound() = NotFound(Reasons.NOTHING_FOUND)
     }
 }

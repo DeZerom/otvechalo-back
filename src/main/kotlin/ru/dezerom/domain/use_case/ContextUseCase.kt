@@ -9,6 +9,7 @@ import ru.dezerom.domain.models.respond.ErrorType
 import ru.dezerom.domain.models.respond.RespondModel
 import ru.dezerom.dto.common.StringDTO
 import ru.dezerom.dto.context.ContextLightWeightDTO
+import ru.dezerom.dto.context.RichContextDTO
 import ru.dezerom.dto.context.SaveContextDTO
 import ru.dezerom.mappers.toDTO
 import ru.dezerom.utils.handle
@@ -20,6 +21,29 @@ class ContextUseCase {
 
     private val authRepository by lazy { AuthRepository() }
     private val contextRepository by lazy { ContextRepository() }
+
+    suspend fun getContextDetails(token: String?, id: String?): RespondModel<RichContextDTO> {
+        val foundCredentials = checkToken(token) ?: return RespondModel.ErrorRespondModel(ErrorType.noAccess())
+
+        if (id.isNullOrBlank())
+            return RespondModel.ErrorRespondModel(ErrorType.emptyValues())
+
+        val idUUID = try {
+            UUID.fromString(id)
+        } catch (_: IllegalArgumentException) {
+            return RespondModel.ErrorRespondModel(ErrorType.WrongData("Invalid id"))
+        }
+
+        return contextRepository.getContextDetails(idUUID).handle(
+            onSuccess = {
+                if (it.body.authorId == foundCredentials.id)
+                    RespondModel.SuccessRespondModel(it.body.toDTO())
+                else
+                    RespondModel.ErrorRespondModel(ErrorType.noAccess())
+            },
+            onError = { RespondModel.ErrorRespondModel(it.errorType) }
+        )
+    }
 
     suspend fun getLightWeightContexts(token: String?): RespondModel<List<ContextLightWeightDTO>> {
         val foundCredentials = checkToken(token) ?: return RespondModel.ErrorRespondModel(ErrorType.noAccess())

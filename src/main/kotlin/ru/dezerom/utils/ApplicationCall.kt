@@ -5,6 +5,8 @@ import io.ktor.server.request.*
 
 private const val TOKEN_HEADER = "AuthTokenHeader"
 
+fun ApplicationCall.getQueryParam(param: String): String? = request.queryParameters[param]
+
 fun ApplicationCall.getToken(): String? {
     return request.header(TOKEN_HEADER)
 }

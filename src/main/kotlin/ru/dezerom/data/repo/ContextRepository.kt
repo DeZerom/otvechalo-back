@@ -13,11 +13,26 @@ import ru.dezerom.domain.models.context.LightWeightContextModel
 import ru.dezerom.domain.models.context.RichContextModel
 import ru.dezerom.domain.models.respond.ErrorType
 import ru.dezerom.mappers.toLightWeightContext
+import ru.dezerom.mappers.toRichContext
 import ru.dezerom.utils.makeAction
 import ru.dezerom.utils.makeCall
 import java.util.*
 
 class ContextRepository {
+
+    suspend fun getContextDetails(id: UUID): CallResult<RichContextModel> {
+        return makeCall(
+            onNull = { CallResult.Error(ErrorType.nothingFound()) },
+            call = {
+                DatabaseSingleton.dbQuery {
+                    ContextTable
+                        .select { ContextTable.id eq id }
+                        .firstOrNull()
+                        ?.toRichContext()
+                }
+            }
+        )
+    }
 
     suspend fun getContextsLightWeight(authorId: UUID): CallResult<List<LightWeightContextModel>> {
         return makeCall(
