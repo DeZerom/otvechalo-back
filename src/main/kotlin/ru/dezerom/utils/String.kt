@@ -1,6 +1,15 @@
 package ru.dezerom.utils
 
 import java.security.MessageDigest
+import java.util.*
+
+fun String?.toUUID(): UUID? {
+    return try {
+        UUID.fromString(this)
+    } catch (_: IllegalArgumentException) {
+        null
+    }
+}
 
 fun String.sha256Hash(): String {
     val bytes = this.toByteArray()
