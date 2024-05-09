@@ -31,11 +31,13 @@ class AuthUseCase {
             onError = { null }
         )
 
-        if (foundToken != null)
-            return RespondModel.SuccessRespondModel(StringDTO(foundToken))
-
-        return if (foundCredentials.password == (credentialsDTO.password + foundCredentials.salt).sha256Hash())
-            authRepository.createToken(foundCredentials.id).map { StringDTO(it.body) }
+        return if (foundCredentials.password == (credentialsDTO.password + foundCredentials.salt).sha256Hash()) {
+            if (foundToken != null) {
+                RespondModel.SuccessRespondModel(StringDTO(foundToken))
+            } else {
+                authRepository.createToken(foundCredentials.id).map { StringDTO(it.body) }
+            }
+        }
         else
             RespondModel.ErrorRespondModel(ErrorType.WrongData(ErrorType.Reasons.WRONG_PASS))
     }
