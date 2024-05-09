@@ -5,6 +5,7 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.util.pipeline.*
 import ru.dezerom.domain.models.respond.RespondModel
+import ru.dezerom.dto.common.ErrorDTO
 
 suspend inline fun <reified T : Any>PipelineContext<Unit, ApplicationCall>.makeRespond(block: () -> RespondModel<T>) {
     when (val response = block()) {
@@ -12,6 +13,6 @@ suspend inline fun <reified T : Any>PipelineContext<Unit, ApplicationCall>.makeR
             call.respond(HttpStatusCode.OK, response.body)
 
         is RespondModel.ErrorRespondModel ->
-            call.respond(response.error.code, response.error.reason)
+            call.respond(response.error.code, ErrorDTO(response.error.reason))
     }
 }
