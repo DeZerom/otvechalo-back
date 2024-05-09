@@ -25,12 +25,12 @@ sealed class ErrorType {
     object Reasons {
         const val EMPTY = ""
 
-        const val USER_EXISTS = "user_already_exists"
-        const val USER_NOT_EXISTS = "wrong_auth_token"
-        const val WRONG_PASS = "wrong_password"
+        const val USER_EXISTS = "Пользователь уже существует"
+        const val USER_NOT_EXISTS = "Неверный токен авторизации"
+        const val WRONG_PASS = "Неверный пароль"
 
-        const val EMPTY_VALUES = "one_of_the_values_is_empty"
-        const val NOTHING_FOUND = "nothing_found"
+        const val EMPTY_VALUES = "Отправлены не все данные"
+        const val NOTHING_FOUND = "Ничего не найледено"
     }
 
     companion object {
