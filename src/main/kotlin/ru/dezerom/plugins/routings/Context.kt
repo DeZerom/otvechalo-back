@@ -22,7 +22,7 @@ fun Routing.contextRouting() {
 
     get("/all_contexts_light_weight") { makeRespond { contextUseCase.getLightWeightContexts(call.getToken()) } }
 
-    get("context_rich") {
+    get("/context_rich") {
         makeRespond { contextUseCase.getContextDetails(call.getToken(), call.getQueryParam(CONTEXT_ID)) }
     }
 
