@@ -35,7 +35,7 @@ class AnsweringUseCase {
             return RespondModel.ErrorRespondModel(ErrorType.noAccess())
 
         return answeringRepository.getAnswer(context.context, query).map {
-            StringDTO(it.body)
+            StringDTO(trim(it.body))
         }
     }
 
@@ -46,8 +46,12 @@ class AnsweringUseCase {
             return RespondModel.ErrorRespondModel(ErrorType.emptyValues())
 
         return answeringRepository.getAnswer(questionDTO.context, questionDTO.query).map {
-            StringDTO(it.body)
+            StringDTO(trim(it.body))
         }
+    }
+
+    private fun trim(string: String): String {
+        return string.substring(startIndex = 1, endIndex = string.length - 1)
     }
 
     private suspend fun checkToken(token: String?): CredentialsModel? {
